@@ -27,7 +27,7 @@ with DAG(
     default_args=default_args,
     dag_id="demo-03",
     description='this DAG for demo training',
-    schedule_interval= "* * * * *",
+    schedule_interval= "@daily",
     start_date = days_ago(1),
     catchup = False
 
@@ -36,7 +36,7 @@ with DAG(
     task1 = PythonOperator(
         task_id='task1',
         python_callable=func1,
-        op_kwargs={
+        op_kwargs={  #op_args={} --> single var  op_kwargs-->dict
             'name':name,
             'div': div,
             'grade': grade
