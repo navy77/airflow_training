@@ -2,7 +2,7 @@ from airflow import DAG
 from datetime import timedelta
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator,BranchPythonOperator
-from airflow.providers.http.operators.http import SimpleHttpOperator
+from airflow.providers.http.hooks.http import HttpHook
 import json
 
 default_args = {
@@ -12,6 +12,14 @@ default_args = {
     'retry_delay':timedelta(minutes=0.05),
 }
 
+
+# https://catfact.ninja/fact
+def fetch_data(**kwargs):  
+    http = HttpHook(http_conn_id='api_demo',method='GET')
+    response = http.run(endpoint='fact')
+    data = response.json()
+    print(data)
+    
 with DAG(
     default_args=default_args,
     dag_id="demo-07",
@@ -21,13 +29,9 @@ with DAG(
     catchup = False
 
 ) as dag:
-    task_api = SimpleHttpOperator(
+    task_api = PythonOperator(
         task_id='task_api',
-        endpoint='https://catfact.ninja/fact',
-        http_conn_id="api_http",
-        method="GET",
-        response_filter=lambda response: json.load(response.text),
-        log_response = True
+        python_callable=fetch_data
     )
 
 # dag flow
